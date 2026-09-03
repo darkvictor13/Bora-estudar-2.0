@@ -1,0 +1,25 @@
+# Dependências
+node_modules/
+vendor/
+
+# Build
+dist/
+build/
+*.tsbuildinfo
+
+# Ambiente e segredos
+.env
+.env.*
+!.env.example
+secrets/
+
+# Sistema operacional e editores
+.DS_Store
+Thumbs.db
+*.swp
+.idea/
+.vscode/*
+!.vscode/extensions.json
+
+# Claude Code — settings.json é versionado; o local, não
+.claude/settings.local.json

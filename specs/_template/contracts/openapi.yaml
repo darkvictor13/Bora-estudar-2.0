@@ -1,0 +1,112 @@
+# Contrato de API desta feature.
+# É a fonte da verdade da fronteira: implementação e testes seguem este
+# arquivo, nunca o contrário (Constituição, Art. 6).
+# Todo endpoint aqui tem teste correspondente em tests/contract/.
+
+openapi: 3.1.0
+
+info:
+  title: "[Nome da feature] — contrato"
+  version: 0.1.0
+  description: |
+    Fronteira definida pela spec specs/NNNN-slug/spec.md.
+    Mudança neste arquivo é mudança de spec: passa pelo fluxo completo.
+
+servers:
+  - url: "{base}/api"
+    variables:
+      base:
+        default: http://localhost:3000
+        description: Ambiente local
+
+tags:
+  - name: "[recurso]"
+    description: "[o que este recurso representa no domínio]"
+
+paths:
+  /[resources]:
+    get:
+      tags: ["[recurso]"]
+      summary: "[o que retorna]"
+      operationId: list[Resources]
+      description: "Atende RF-01."
+      parameters:
+        - name: limit
+          in: query
+          required: false
+          schema: { type: integer, minimum: 1, maximum: 100, default: 20 }
+      responses:
+        "200":
+          description: Lista retornada
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [items]
+                properties:
+                  items:
+                    type: array
+                    items: { $ref: "#/components/schemas/Resource" }
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+
+    post:
+      tags: ["[recurso]"]
+      summary: "[o que cria]"
+      operationId: create[Resource]
+      description: "Atende RF-02. Viola RN-01 → 422."
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/ResourceInput" }
+      responses:
+        "201":
+          description: Criado
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Resource" }
+        "422":
+          $ref: "#/components/responses/ValidationError"
+
+components:
+  schemas:
+    Resource:
+      type: object
+      required: [id, created_at]
+      properties:
+        id: { type: string, format: uuid }
+        created_at: { type: string, format: date-time }
+
+    ResourceInput:
+      type: object
+      required: []
+      properties: {}
+      additionalProperties: false
+
+    Error:
+      type: object
+      required: [code, message]
+      properties:
+        code: { type: string, description: "Código estável, legível por máquina" }
+        message: { type: string, description: "Mensagem em português, para o usuário" }
+        details:
+          type: array
+          items:
+            type: object
+            properties:
+              field: { type: string }
+              message: { type: string }
+
+  responses:
+    Unauthorized:
+      description: Sem credencial válida
+      content:
+        application/json:
+          schema: { $ref: "#/components/schemas/Error" }
+
+    ValidationError:
+      description: Regra de negócio ou validação violada
+      content:
+        application/json:
+          schema: { $ref: "#/components/schemas/Error" }
